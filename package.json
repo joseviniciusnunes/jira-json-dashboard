@@ -1,0 +1,8 @@
+{
+  "name": "jira-json-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": { "start": "kill -9 $(lsof -ti :6060) 2>/dev/null || true && node server.js" },
+  "dependencies": { "express": "^4.21.2" }
+}

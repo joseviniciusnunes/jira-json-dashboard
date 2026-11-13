@@ -1,0 +1,822 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jira — Dashboard de movimentações</title>
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230052cc'/%3E%3Cg fill='none' stroke='white' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M9 9h14'/%3E%3Cpath d='M9 16h14'/%3E%3Cpath d='M9 23h14'/%3E%3C/g%3E%3Ccircle cx='13' cy='9' r='2.2' fill='white'/%3E%3Ccircle cx='19' cy='16' r='2.2' fill='white'/%3E%3Ccircle cx='13' cy='23' r='2.2' fill='white'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      font-family: Inter, system-ui, Arial, sans-serif;
+      color: #e6e6e6;
+      background: #1b1f24;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+    }
+
+    header {
+      background: #23272e;
+      border-bottom: 1px solid #343a43;
+      padding: 18px 24px;
+    }
+
+    h1 {
+      font-size: 20px;
+      margin: 0 0 4px;
+    }
+
+    .sub {
+      color: #9aa4b2;
+      font-size: 13px;
+    }
+
+    main {
+      padding: 22px;
+      max-width: 1800px;
+      margin: auto;
+    }
+
+    .panel {
+      background: #23272e;
+      border: 1px solid #343a43;
+      border-radius: 9px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    label {
+      font-size: 12px;
+      font-weight: 700;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    input,
+    textarea {
+      font: inherit;
+      border: 1px solid #4a515c;
+      border-radius: 6px;
+      padding: 10px;
+      width: 100%;
+      color: #e6e6e6;
+      background: #1b1f24;
+    }
+
+    .domain {
+      flex: 1;
+      min-width: 280px;
+    }
+
+    .week-nav {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .week-nav .arrow {
+      width: 40px;
+      height: 42px;
+      padding: 0;
+      font-size: 18px;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .date-field {
+      width: 150px;
+    }
+
+    .date-field input {
+      padding: 10px 8px;
+    }
+
+    button,
+    .linkbtn {
+      border: 0;
+      border-radius: 6px;
+      padding: 10px 14px;
+      background: #0052cc;
+      color: white;
+      font-weight: 650;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    button.secondary {
+      background: #343a43;
+      color: #e6e6e6;
+    }
+
+    .url {
+      font-size: 12px;
+      overflow-wrap: anywhere;
+      color: #b6c2d1;
+      margin-top: 10px;
+      line-height: 1.5;
+      background: #1b1f24;
+      padding: 10px;
+      border-radius: 6px;
+    }
+
+    textarea {
+      min-height: 190px;
+      resize: vertical;
+      font-family: monospace;
+      font-size: 12px;
+    }
+
+    #board {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(245px, 1fr));
+      gap: 12px;
+      overflow-x: auto;
+      align-items: start;
+    }
+
+    .day {
+      background: #2a2f37;
+      border-radius: 9px;
+      padding: 12px;
+      min-height: 220px;
+    }
+
+    .day h2 {
+      font-size: 14px;
+      margin: 0 0 4px;
+    }
+
+    .count {
+      font-size: 12px;
+      color: #9aa4b2;
+      margin-bottom: 12px;
+    }
+
+    .card {
+      background: #23272e;
+      border: 1px solid #343a43;
+      border-radius: 7px;
+      padding: 11px;
+      margin-bottom: 9px;
+      box-shadow: 0 1px 2px #00000040;
+    }
+
+    .key {
+      font-weight: 700;
+      color: #4c9aff;
+      text-decoration: none;
+      font-size: 12px;
+    }
+
+    .summary {
+      font-size: 13px;
+      line-height: 1.4;
+      margin: 5px 0 9px;
+      overflow-wrap: anywhere;
+    }
+
+    .badge {
+      display: inline-block;
+      background: #1f3a68;
+      color: #9dc2ff;
+      padding: 3px 7px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .movements {
+      border-left: 2px solid #343a43;
+      margin-left: 5px;
+      padding-left: 12px;
+    }
+
+    .movement {
+      position: relative;
+      margin-bottom: 12px;
+    }
+
+    .movement:last-child {
+      margin-bottom: 2px;
+    }
+
+    .movement::before {
+      content: "";
+      position: absolute;
+      left: -18px;
+      top: 4px;
+      width: 8px;
+      height: 8px;
+      background: #0052cc;
+      border-radius: 50%;
+    }
+
+    .movement-time {
+      color: #9aa4b2;
+      font-size: 10px;
+      margin-bottom: 4px;
+    }
+
+    .transition {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-wrap: wrap;
+      font-size: 11px;
+    }
+
+    .status {
+      background: #1b1f24;
+      border-radius: 4px;
+      padding: 4px 6px;
+    }
+
+    .author {
+      color: #9aa4b2;
+      font-size: 10px;
+      margin-top: 4px;
+    }
+
+    .meta {
+      color: #9aa4b2;
+      font-size: 10px;
+      margin-top: 10px;
+      line-height: 1.5;
+    }
+
+    .empty {
+      color: #6b7686;
+      font-size: 12px;
+      padding: 10px 2px;
+    }
+
+    #message {
+      white-space: pre-wrap;
+      color: #ff7a6e;
+      margin: 10px 0;
+    }
+
+    .stats {
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+      color: #b6c2d1;
+      font-size: 13px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #9aa4b2;
+      line-height: 1.5;
+      margin-top: 8px;
+    }
+
+    @media(max-width:800px) {
+      main {
+        padding: 12px;
+      }
+
+      header {
+        padding: 15px;
+      }
+
+      #board {
+        grid-template-columns: repeat(7, 260px);
+      }
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 5px;
+    }
+
+    .issue-type-icon {
+      width: 16px;
+      height: 16px;
+      object-fit: contain;
+    }
+
+    .weekend-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #b6c2d1;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .weekend-toggle input {
+      width: auto;
+      accent-color: #0052cc;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>Jira — movimentações de status</h1>
+    <div class="sub">Uma consulta · Últimos 7 dias · Cards agrupados</div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <h2 style="font-size:16px;margin:0 0 12px">1. Gerar consulta única</h2>
+      <div class="row">
+        <div class="domain">
+          <label for="domain">Domínio do Jira</label>
+          <input id="domain" placeholder="https://suaempresa.atlassian.net">
+        </div>
+        <div class="domain">
+          <label for="email">Seu e-mail (para filtrar movimentações)</label>
+          <input id="email" type="email" placeholder="voce@empresa.com.br">
+        </div>
+        <button id="generate">Gerar URL</button>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <div class="week-nav">
+          <button class="secondary arrow" id="prevWeek" title="Semana anterior">←</button>
+          <div class="date-field">
+            <label for="startDate">Data inicial (domingo)</label>
+            <input type="date" id="startDate">
+          </div>
+          <div class="date-field">
+            <label for="endDate">Data final (sábado)</label>
+            <input type="date" id="endDate">
+          </div>
+          <button class="secondary arrow" id="nextWeek" title="Próxima semana">→</button>
+        </div>
+      </div>
+      <div class="hint" id="range"></div>
+      <div id="urlarea" class="hidden">
+        <div class="url" id="urltext"></div>
+        <div class="row" style="margin-top:10px">
+          <a id="openurl" class="linkbtn" href="#" target="_blank" rel="noopener">Abrir consulta no Jira ↗</a>
+          <button class="secondary" id="copyurl">Copiar URL</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 style="font-size:16px;margin:0 0 5px">2. Colar JSON</h2>
+      <div class="sub">Copie a resposta JSON inteira do Jira.</div>
+      <textarea id="json" placeholder="Cole aqui o JSON retornado pelo Jira"></textarea>
+      <div class="row" style="margin-top:12px">
+        <button id="render">Processar JSON</button>
+        <button class="secondary" id="clear">Limpar</button>
+      </div>
+      <div class="hint">Cada card aparece uma única vez por dia, com todas as suas transições agrupadas.</div>
+      <div id="message"></div>
+    </section>
+
+    <section class="panel hidden" id="results">
+      <div class="row" style="justify-content:space-between;margin-bottom:12px">
+        <div>
+          <h2 style="font-size:16px;margin:0 0 5px">3. Movimentações por dia</h2>
+          <div class="stats" id="stats"></div>
+        </div>
+        <div class="row">
+          <label class="weekend-toggle" for="hideWeekend">
+            <input type="checkbox" id="hideWeekend" checked>
+            Ocultar sábado e domingo
+          </label>
+          <button class="secondary" onclick="window.print()">Imprimir</button>
+        </div>
+      </div>
+      <div id="board"></div>
+    </section>
+  </main>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const STORAGE_KEY = "jiraDashboardLastJson";
+    const DOMAIN_KEY = "jiraDashboardDomain";
+    const EMAIL_KEY = "jiraDashboardEmail";
+    let days = [];
+    let hideWeekend = true;
+
+    const localYmd = date =>
+      new Intl.DateTimeFormat("en-CA", {
+        timeZone: "America/Sao_Paulo",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+      }).format(date);
+
+    const shiftDay = (ymd, delta) => {
+      const [y, m, d] = ymd.split("-").map(Number);
+      return new Date(Date.UTC(y, m - 1, d + delta, 12))
+        .toISOString().slice(0, 10);
+    };
+
+    const dateLabel = ymd =>
+      new Intl.DateTimeFormat("pt-BR", {
+        timeZone: "UTC",
+        weekday: "short",
+        day: "2-digit",
+        month: "2-digit"
+      }).format(new Date(ymd + "T12:00:00Z"));
+
+    const escapeHtml = value =>
+      String(value ?? "").replace(/[&<>"']/g, c => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;",
+        '"': "&quot;", "'": "&#39;"
+      }[c]));
+
+    const fmtTime = value =>
+      value ? new Intl.DateTimeFormat("pt-BR", {
+        timeZone: "America/Sao_Paulo",
+        hour: "2-digit",
+        minute: "2-digit"
+      }).format(new Date(value)) : "";
+
+    const shiftWeek = (ymd, delta) => {
+      const [y, m, d] = ymd.split("-").map(Number);
+      return new Date(Date.UTC(y, m - 1, d + delta * 7, 12))
+        .toISOString().slice(0, 10);
+    };
+
+    function setWeek(startYmd) {
+      const start = startYmd;
+      const end = shiftDay(start, 6);
+      $("startDate").value = start;
+      $("endDate").value = end;
+    }
+
+    function currentWeekStart() {
+      const today = new Date();
+      const day = today.getDay(); // 0 = domingo
+      const start = new Date(today);
+      start.setDate(today.getDate() - day);
+      return localYmd(start);
+    }
+
+    function generate() {
+      const base = $("domain").value.trim().replace(/\/+$/, "");
+
+      if (!/^https:\/\/[^/]+$/i.test(base)) {
+        $("message").textContent =
+          "Informe o domínio, por exemplo https://suaempresa.atlassian.net";
+        return;
+      }
+
+      const start = $("startDate").value;
+      const end = $("endDate").value;
+
+      if (!start || !end) {
+        $("message").textContent =
+          "Informe a data inicial e a data final.";
+        return;
+      }
+
+      const jql =
+        `status CHANGED BY currentUser() DURING ("${start} 00:00", "${end} 23:59") AND issuetype != História ORDER BY updated ASC`;
+
+      const params = new URLSearchParams({
+        jql,
+        fields: "summary,status,issuetype,project",
+        expand: "changelog",
+        maxResults: "100"
+      });
+
+      const url =
+        `${base}/rest/api/3/search/jql?${params.toString()}`;
+
+      $("range").textContent = `Período: ${start} até ${end}`;
+      $("urltext").textContent = url;
+      $("openurl").href = url;
+      $("urlarea").classList.remove("hidden");
+      $("message").textContent = "";
+
+      // Persiste o domínio e o e-mail para reutilizar nas próximas visitas.
+      try {
+        localStorage.setItem(DOMAIN_KEY, base);
+        localStorage.setItem(EMAIL_KEY, $("email").value.trim());
+      } catch {
+        // Armazenamento indisponível — ignora.
+      }
+
+      // Ao gerar uma nova consulta, limpa o quadro e o JSON armazenado.
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch {
+        // ignora
+      }
+      $("json").value = "";
+      $("results").classList.add("hidden");
+    }
+
+    function getHistories(issue) {
+      const c = issue.changelog;
+      if (Array.isArray(c)) return c;
+      if (Array.isArray(c?.histories)) return c.histories;
+      if (Array.isArray(c?.values)) return c.values;
+      return [];
+    }
+
+    // Retorna os dias a exibir, ocultando sábado (5) e domingo (0) se ativado.
+    function visibleDays() {
+      if (!hideWeekend) return days;
+      return days.filter(day => {
+        const dow = new Date(day + "T12:00:00Z").getUTCDay();
+        return dow !== 0 && dow !== 6;
+      });
+    }
+
+    function render() {
+      const raw = $("json").value.trim();
+
+      if (!raw) {
+        $("message").textContent = "Cole o JSON retornado pelo Jira.";
+        return;
+      }
+
+      try {
+        const data = JSON.parse(raw);
+
+        if (!Array.isArray(data.issues))
+          throw new Error('O JSON não contém o array "issues".');
+
+        // Captura a janela da semana no momento do processamento (snapshot).
+        // Assim, alterar os campos de data depois não afeta o quadro já renderizado.
+        const weekStart = $("startDate").value;
+        const weekEnd = $("endDate").value;
+
+        if (!weekStart || !weekEnd)
+          throw new Error("Informe a data inicial e a data final.");
+
+        // Gera os 7 dias da semana (domingo a sábado) a partir do início.
+        days = Array.from({ length: 7 }, (_, i) => shiftDay(weekStart, i));
+
+        // Estrutura: dia -> chave do card -> card com movimentações
+        const columns = Object.fromEntries(days.map(day => [day, new Map()]));
+        let issueCount = 0;
+
+        for (const issue of data.issues) {
+          const type = (issue.fields?.issuetype?.name || "")
+            .toLocaleLowerCase("pt-BR");
+
+          if (type === "história" || type === "story") continue;
+
+          issueCount++;
+
+          const userEmail = $("email").value.trim().toLowerCase();
+
+          for (const history of getHistories(issue)) {
+            // Exibe somente movimentações realizadas pelo usuário cadastrado.
+            if (userEmail &&
+              history.author?.emailAddress?.toLowerCase() !== userEmail) {
+              continue;
+            }
+
+            if (!history.created) continue;
+
+            const eventDay = localYmd(new Date(history.created));
+            if (!columns[eventDay]) continue;
+
+            for (const item of history.items || []) {
+              if (item.field !== "status" && item.fieldId !== "status")
+                continue;
+
+              // Cria o card somente na primeira movimentação daquele dia.
+              if (!columns[eventDay].has(issue.key)) {
+                columns[eventDay].set(issue.key, {
+                  key: issue.key,
+                  summary: issue.fields?.summary || "(sem resumo)",
+                  type: issue.fields?.issuetype?.name || "",
+                  project: issue.fields?.project?.name || "",
+                  typeIcon: issue.fields?.issuetype?.iconUrl || "",
+                  movements: []
+                });
+              }
+
+              const card = columns[eventDay].get(issue.key);
+
+              card.movements.push({
+                from: item.fromString || "(sem status anterior)",
+                to: item.toString || "(sem status novo)",
+                author: history.author?.displayName || "Usuário desconhecido",
+                date: history.created
+              });
+            }
+          }
+        }
+
+        let totalMovements = 0;
+        let totalCards = 0;
+
+        const base = $("domain").value.trim().replace(/\/+$/, "");
+
+        $("board").innerHTML = visibleDays().map(day => {
+          const cards = [...columns[day].values()];
+
+          cards.forEach(card => {
+            card.movements.sort(
+              (a, b) => new Date(a.date) - new Date(b.date)
+            );
+          });
+
+          totalCards += cards.length;
+          totalMovements += cards.reduce(
+            (sum, card) => sum + card.movements.length, 0
+          );
+
+          return `
+        <section class="day">
+          <h2>${dateLabel(day)}</h2>
+          <div class="count">
+            ${cards.length} card(s) ·
+            ${cards.reduce((s, c) => s + c.movements.length, 0)} movimentação(ões)
+          </div>
+
+          ${cards.length ? cards.map(card => `
+            <article class="card">
+              <div class="card-header">
+                ${card.typeIcon ? `
+                  <img
+                    src="${escapeHtml(card.typeIcon)}"
+                    class="issue-type-icon"
+                    title="${escapeHtml(card.type)}"
+                    alt="${escapeHtml(card.type)}"
+                  >
+                ` : ''}
+
+                <a class="key"
+                  href="${escapeHtml(base)}/browse/${encodeURIComponent(card.key)}"
+                  target="_blank" rel="noopener">
+                  ${escapeHtml(card.key)}
+                </a>
+              </div>
+
+              <div class="summary">
+                ${escapeHtml(card.summary)}
+              </div>
+
+              <span class="badge">
+                ${card.movements.length} movimentação(ões)
+              </span>
+
+              <div class="movements">
+                ${card.movements.map(m => `
+                  <div class="movement">
+                    <div class="movement-time">
+                      ${fmtTime(m.date)}
+                    </div>
+
+                    <div class="transition">
+                      <span class="status">${escapeHtml(m.from)}</span>
+                      <span>→</span>
+                      <span class="status">${escapeHtml(m.to)}</span>
+                    </div>
+
+                    <div class="author">
+                      ${escapeHtml(m.author)}
+                    </div>
+                  </div>
+                `).join("")}
+              </div>
+
+              <div class="meta">
+                ${escapeHtml(card.project)} ·
+                ${escapeHtml(card.type)}
+              </div>
+            </article>
+          `).join("") : `
+            <div class="empty">Nenhuma movimentação</div>
+          `}
+        </section>
+      `;
+        }).join("");
+
+        $("stats").textContent =
+          `${totalCards} cards únicos · ${totalMovements} movimentações · ${issueCount} issues retornadas`;
+
+        $("results").classList.remove("hidden");
+        $("message").textContent = "";
+
+        // Persiste o último JSON processado e a semana usada, para restaurar
+        // o quadro com os mesmos dias ao reabrir a página.
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            json: raw,
+            weekStart: weekStart
+          }));
+        } catch {
+          // Armazenamento indisponível (ex.: modo privado) — ignora.
+        }
+
+        if (data.nextPageToken || data.isLast === false) {
+          $("message").textContent =
+            "Atenção: existem mais resultados na paginação do Jira. Este JSON pode estar incompleto.";
+        }
+
+      } catch (error) {
+        $("message").textContent =
+          "Erro ao processar JSON: " + error.message;
+      }
+    }
+
+    $("generate").addEventListener("click", generate);
+    $("render").addEventListener("click", render);
+
+    $("prevWeek").addEventListener("click", () => {
+      setWeek(shiftWeek($("startDate").value, -1));
+    });
+
+    $("nextWeek").addEventListener("click", () => {
+      setWeek(shiftWeek($("startDate").value, 1));
+    });
+
+    $("hideWeekend").addEventListener("change", () => {
+      hideWeekend = $("hideWeekend").checked;
+      // Re-renderiza o quadro se já houver resultados visíveis.
+      if (!$("results").classList.contains("hidden")) render();
+    });
+
+    // Restaura o último quadro salvo, se houver.
+    function restoreLastBoard() {
+      let saved;
+      try {
+        saved = localStorage.getItem(STORAGE_KEY);
+      } catch {
+        return;
+      }
+      if (!saved) return;
+
+      let payload;
+      try {
+        payload = JSON.parse(saved);
+      } catch {
+        // Formato antigo: apenas o JSON bruto.
+        payload = { json: saved, weekStart: "" };
+      }
+
+      // Restaura a semana usada na consulta original antes de renderizar.
+      if (payload.weekStart) setWeek(payload.weekStart);
+
+      $("json").value = payload.json;
+      render();
+    }
+
+    // Restaura o domínio e o e-mail salvos, se houver.
+    function restoreSettings() {
+      try {
+        const domain = localStorage.getItem(DOMAIN_KEY);
+        const email = localStorage.getItem(EMAIL_KEY);
+        if (domain) $("domain").value = domain;
+        if (email) $("email").value = email;
+      } catch {
+        // Armazenamento indisponível — ignora.
+      }
+    }
+
+    // Inicializa com a semana atual (domingo a sábado)
+    setWeek(currentWeekStart());
+    restoreSettings();
+    restoreLastBoard();
+
+    $("copyurl").addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText($("urltext").textContent);
+        $("copyurl").textContent = "Copiado!";
+        setTimeout(() => $("copyurl").textContent = "Copiar URL", 1200);
+      } catch {
+        $("message").textContent =
+          "Não foi possível copiar automaticamente. Selecione e copie a URL.";
+      }
+    });
+
+    $("clear").addEventListener("click", () => {
+      $("json").value = "";
+      $("results").classList.add("hidden");
+      $("message").textContent = "";
+    });
+  </script>
+</body>
+
+</html>

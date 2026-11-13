@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "Jira Cards Dashboard",
+  "version": "3.0.0",
+  "description": "Dashboard de movimentações de status do Jira, usando a sessão ativa.",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Jira Cards Dashboard"
+  }
+}
